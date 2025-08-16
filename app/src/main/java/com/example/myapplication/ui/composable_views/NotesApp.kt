@@ -5,19 +5,19 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.myapplication.model.NoteModel
 
 @Composable
 fun NotesApp(notesViewModel: NotesViewModel = viewModel() ) {
     val navController = rememberNavController()
+    val notes by notesViewModel.notes.collectAsState()
 
     NavHost(navController = navController, startDestination = "list") {
         // List screen
@@ -49,13 +49,13 @@ fun NotesApp(notesViewModel: NotesViewModel = viewModel() ) {
                 )
             }) {
             NoteListScreen(
-                notes = notesViewModel.notes,
+                notes = notes,
                 onAddClick = { navController.navigate("add") },
                 onItemClick = { noteID ->
                     navController.navigate("edit/$noteID")
                 },
                 onDeleteClick = { note ->
-                    notesViewModel.deleteNote(note)
+                    notesViewModel.delete(note)
                 }
             )
         }
@@ -90,7 +90,7 @@ fun NotesApp(notesViewModel: NotesViewModel = viewModel() ) {
             AddEditNoteScreen(
                 initialNote = null,
                 onSave = { title, description ->
-                    notesViewModel.addNote(title, description)
+                    notesViewModel.add(title, description)
                     navController.popBackStack()
                 },
                 onCancel = { navController.popBackStack() }
@@ -124,15 +124,19 @@ fun NotesApp(notesViewModel: NotesViewModel = viewModel() ) {
                     animationSpec = tween(700)
                 )
             }) { backStackEntry ->
+
             val noteID = backStackEntry.arguments?.getString("noteID")
-            val note = notesViewModel.notes.find { it.id.toString() == noteID }
+            val note = notes.find { it.id.toString() == noteID }
 
             if (note != null) {
                 AddEditNoteScreen(
                     initialNote = note,
                     onSave = { name, model ->
-                        note.title = name
-                        note.description = model
+                        val updated = note.copy(
+                            title = name,
+                            description = model
+                        )
+                        notesViewModel.update(updated)
                         navController.popBackStack()
                     },
                     onCancel = { navController.popBackStack() }
