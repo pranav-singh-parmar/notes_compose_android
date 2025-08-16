@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,9 +16,8 @@ import androidx.navigation.navArgument
 import com.example.myapplication.model.NoteModel
 
 @Composable
-fun NotesApp() {
+fun NotesApp(notesViewModel: NotesViewModel = viewModel() ) {
     val navController = rememberNavController()
-    val notes = remember { mutableStateListOf<NoteModel>() }
 
     NavHost(navController = navController, startDestination = "list") {
         // List screen
@@ -49,13 +49,13 @@ fun NotesApp() {
                 )
             }) {
             NoteListScreen(
-                notes = notes,
+                notes = notesViewModel.notes,
                 onAddClick = { navController.navigate("add") },
                 onItemClick = { noteID ->
                     navController.navigate("edit/$noteID")
                 },
                 onDeleteClick = { note ->
-                    notes.remove(note)
+                    notesViewModel.deleteNote(note)
                 }
             )
         }
@@ -89,8 +89,8 @@ fun NotesApp() {
             }) {
             AddEditNoteScreen(
                 initialNote = null,
-                onSave = { name, model ->
-                    notes.add(NoteModel(title = name, description = model))
+                onSave = { title, description ->
+                    notesViewModel.addNote(title, description)
                     navController.popBackStack()
                 },
                 onCancel = { navController.popBackStack() }
@@ -125,7 +125,7 @@ fun NotesApp() {
                 )
             }) { backStackEntry ->
             val noteID = backStackEntry.arguments?.getString("noteID")
-            val note = notes.find { it.id.toString() == noteID }
+            val note = notesViewModel.notes.find { it.id.toString() == noteID }
 
             if (note != null) {
                 AddEditNoteScreen(
