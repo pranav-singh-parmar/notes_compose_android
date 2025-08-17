@@ -52,7 +52,7 @@ fun NoteListScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Note List") },
+                title = { Text("Notes List") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary, // <-- AppBar BG color
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
