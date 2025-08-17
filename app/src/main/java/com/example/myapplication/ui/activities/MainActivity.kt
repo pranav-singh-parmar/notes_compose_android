@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyApplicationTheme {
-                NotesApp()
+                NotesApp(notesViewModel = notesViewModel)
             }
         }
     }
